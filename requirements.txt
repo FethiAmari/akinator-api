@@ -1,4 +1,4 @@
 flask
 flask-cors
 gunicorn
-akinator.py
+pip install akinator-python
