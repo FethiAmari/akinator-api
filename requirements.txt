@@ -1,4 +1,4 @@
 flask
 flask-cors
-akinator.py
 gunicorn
+akinator.py
