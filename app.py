@@ -4,6 +4,7 @@ from flask_cors import CORS
 # from akinator_python import Akinator
 from akinator.akinator import Akinator
 import uuid
+import json
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -40,6 +41,7 @@ def start_game():
 
 @app.route('/api/answer', methods=['POST'])
 def post_answer():
+
     try:
         data = request.json
         session_id = data.get('session_id')

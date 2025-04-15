@@ -67,6 +67,7 @@ class Akinator():
         return question_label
 
     def post_answer(self, answer: str):
+        print("Sending to /answer:", self.json)
         answers_map = {"y": 0, "n": 1, "idk": 2, "p": 3, "pn": 4}
         if answer not in answers_map:
             raise AkinatorError(
