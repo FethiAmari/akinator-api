@@ -5,7 +5,9 @@ import json
 import os
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24).hex()  # Secure random key for production
+app.secret_key = os.urandom(24).hex()
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Allow cross-site cookies
+app.config['SESSION_COOKIE_SECURE'] = True      # Require HTTPS
 CORS(
     app,
     resources={
