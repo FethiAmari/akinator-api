@@ -1,28 +1,30 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from akinator.akinator import Akinator
-import json
+import uuid
 
 app = Flask(__name__)
-app.secret_key = "sabrina"  # Needed for session
-CORS(app)  # Enable CORS for all routes
+app.secret_key = "sabrina"
+CORS(app)
 
+# In-memory session store
+akinator_sessions = {}
 
 @app.route('/api/start', methods=['POST'])
 def start_game():
     try:
         data = request.json
         lang = data.get('lang', 'en')
-        child_mode = data.get('child_mode', "true")
+        child_mode = data.get('child_mode', True)
 
-        # Create new Akinator game
         aki = Akinator(lang=lang, child_mode=child_mode)
         aki.start_game()
 
-        # Save game state to session
-        session['akinator_state'] = json.dumps(aki.json)
+        session_id = str(uuid.uuid4())
+        akinator_sessions[session_id] = aki
 
         return jsonify({
+            'session_id': session_id,
             'question': aki.question,
             'progression': aki.progression,
             'step': aki.step
@@ -35,18 +37,14 @@ def start_game():
 def post_answer():
     try:
         data = request.json
+        session_id = data.get('session_id')
         answer = data.get('answer')
 
-        if 'akinator_state' not in session:
-            return jsonify({'error': 'Invalid session'}), 400
+        if not session_id or session_id not in akinator_sessions:
+            return jsonify({'error': 'Invalid session or answer'}), 400
 
-        aki = Akinator()
-        aki.json = json.loads(session['akinator_state'])
-
+        aki = akinator_sessions[session_id]
         aki.post_answer(answer)
-
-        # Save updated game state
-        session['akinator_state'] = json.dumps(aki.json)
 
         response = {
             'question': aki.question,
@@ -59,7 +57,7 @@ def post_answer():
                 'id': aki.answer_id,
                 'name': aki.name,
                 'description': aki.description,
-                'picture': aki.photo if hasattr(aki, 'photo') else None
+                'picture': aki.photo
             }
 
         return jsonify(response)
@@ -70,15 +68,14 @@ def post_answer():
 @app.route('/api/back', methods=['POST'])
 def go_back():
     try:
-        if 'akinator_state' not in session:
+        data = request.json
+        session_id = data.get('session_id')
+
+        if not session_id or session_id not in akinator_sessions:
             return jsonify({'error': 'Invalid session'}), 400
 
-        aki = Akinator()
-        aki.json = json.loads(session['akinator_state'])
-
+        aki = akinator_sessions[session_id]
         aki.go_back()
-
-        session['akinator_state'] = json.dumps(aki.json)
 
         return jsonify({
             'question': aki.question,
@@ -92,15 +89,14 @@ def go_back():
 @app.route('/api/exclude', methods=['POST'])
 def exclude_guess():
     try:
-        if 'akinator_state' not in session:
+        data = request.json
+        session_id = data.get('session_id')
+
+        if not session_id or session_id not in akinator_sessions:
             return jsonify({'error': 'Invalid session'}), 400
 
-        aki = Akinator()
-        aki.json = json.loads(session['akinator_state'])
-
+        aki = akinator_sessions[session_id]
         aki.exclude()
-
-        session['akinator_state'] = json.dumps(aki.json)
 
         return jsonify({
             'question': aki.question,
@@ -114,7 +110,12 @@ def exclude_guess():
 @app.route('/api/end', methods=['POST'])
 def end_game():
     try:
-        session.pop('akinator_state', None)
+        data = request.json
+        session_id = data.get('session_id')
+
+        if session_id and session_id in akinator_sessions:
+            del akinator_sessions[session_id]
+
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
