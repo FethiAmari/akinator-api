@@ -1,8 +1,6 @@
 import cloudscraper
 from bs4 import BeautifulSoup
-import sys
 
-print = lambda *args, **kwargs: __import__('builtins').print(*args, **{**kwargs, "flush": True})
 
 
 class AkinatorError(Exception):
@@ -70,8 +68,6 @@ class Akinator():
         return question_label
 
     def post_answer(self, answer: str):
-        print("SESSION BEFORE ANSWER:", self.json.get("session"))
-        print("SIGNATURE BEFORE ANSWER:", self.json.get("signature"))
         answers_map = {"y": 0, "n": 1, "idk": 2, "p": 3, "pn": 4}
         if answer not in answers_map:
             raise AkinatorError(
