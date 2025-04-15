@@ -1,4 +1,4 @@
 flask
 flask-cors
 gunicorn
-myaki-api
+aki1-api
