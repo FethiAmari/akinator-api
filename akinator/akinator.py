@@ -1,5 +1,8 @@
 import cloudscraper
 from bs4 import BeautifulSoup
+import sys
+
+print = lambda *args, **kwargs: __import__('builtins').print(*args, **{**kwargs, "flush": True})
 
 
 class AkinatorError(Exception):
