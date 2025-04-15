@@ -1,8 +1,7 @@
 # app.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-# from akinator_python import Akinator
-from akinator.akinator import Akinator
+from akinator_python import Akinator
 import uuid
 
 app = Flask(__name__)
