@@ -2,18 +2,26 @@ from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from akinator.akinator import Akinator
 import json
+import os
 
 app = Flask(__name__)
-app.secret_key = "sabrina"  # Needed for session
-CORS(app)  # Enable CORS for all routes
-
+app.secret_key = os.urandom(24).hex()  # Secure random key for production
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": ["https://mind-reader.sculptvid.com"],
+            "supports_credentials": True
+        }
+    }
+)
 
 @app.route('/api/start', methods=['POST'])
 def start_game():
     try:
         data = request.json
         lang = data.get('lang', 'en')
-        child_mode = data.get('child_mode', "true")
+        child_mode = data.get('child_mode', "true") == "true"  # Convert string to boolean
 
         # Create new Akinator game
         aki = Akinator(lang=lang, child_mode=child_mode)
@@ -29,7 +37,6 @@ def start_game():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/api/answer', methods=['POST'])
 def post_answer():
@@ -66,7 +73,6 @@ def post_answer():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/back', methods=['POST'])
 def go_back():
     try:
@@ -87,7 +93,6 @@ def go_back():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/api/exclude', methods=['POST'])
 def exclude_guess():
@@ -110,7 +115,6 @@ def exclude_guess():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/end', methods=['POST'])
 def end_game():
     try:
@@ -118,7 +122,6 @@ def end_game():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
