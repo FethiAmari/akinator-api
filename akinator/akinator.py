@@ -95,7 +95,7 @@ class Akinator():
             except:
                 self.name = progression["name_proposition"]
                 self.description = progression["description_proposition"]
-                self.photo = progression["photo"]
+                self.photo = progression["img_character"]
                 self.answer_id = progression["id_proposition"]
                 self.json["step_last_proposition"] = int(self.json["step"])
 
